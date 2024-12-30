@@ -1,6 +1,6 @@
 # SAM-Assisted Image Labeling Tool
 
-A Python-based labeling tool that uses [Segment Anything Model (SAM)](https://github.com/ultralytics/ultralytics) to help you interactively segment objects in images. This tool provides a Tkinter front-end for easy setup and launching a Matplotlib-based interface for image segmentation. With it, you can:
+A Python-based labeling tool that uses [Segment Anything Model (SAM)](https://github.com/facebookresearch/sam2) to help you interactively segment objects in images. This tool provides a Tkinter front-end for easy setup and launching a Matplotlib-based interface for image segmentation. With it, you can:
 
 1. Choose a directory of images.
 2. Enter any number of class labels you wish to annotate.
