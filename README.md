@@ -29,6 +29,13 @@ A Python-based labeling tool that uses [Segment Anything Model (SAM)](https://gi
 5. [tkinter](https://docs.python.org/3/library/tkinter.html) (comes standard with most Python installations, but please ensure it’s installed and enabled).
 6. [ultralytics](https://pypi.org/project/ultralytics/) for SAM (`pip install ultralytics` or `pip install ultralytics==<specific_version>`)
 
-Additionally, you will need a SAM weights file named (by default) **`sam2.1_b.pt`** in the same directory as the script—or you can modify the code to point to your own model file.
+
+## Recommended Installation Method for Beginners
+1. **Install [Anaconda](https://docs.anaconda.com/anaconda/install/).** During installation, I recommend checking the option to include Anaconda to your PATH environment variable.
+2. **Create a Python environment with Python version 3.9:**  On the Command Prompt, simply type:  **conda create -n project_environment_name python=3.9**       Please be sure to change "project_environment_name to the name of the environment you wish to use.
+3. **Activate the environment:**    On the command prompt, type:   conda activate project_environment_name         (again, use the name of the environment you have chosen)
+4. **GPU-
+
+Additionally, you will need a SAM weights file named (by default) **`sam2.1_b.pt`** in the same directory as the script—or you can modify the code to point to your own model file. When running the code for the first time, the **`sam2.1_b.pt`** file will be downloaded into the directory automatically.
 
 ---
