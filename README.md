@@ -8,8 +8,7 @@ A Python-based labeling tool that uses [Segment Anything Model (SAM)](https://gi
 4. Save annotations in a `.txt` format compatible with common YOLO-style tooling.
 5. (Optionally) split your dataset into train/valid/test folders.
 
-![Sample Screenshot](https://user-images.githubusercontent.com/placeholder/your-image-here.png)  
-*(Screenshot is only an example placeholder; please update with your own.)*
+![Labeling Tool for YOLO](https://github.com/user-attachments/assets/45e268f5-b0d6-44b4-b591-d39ed6dc44dc)
 
 ## Features
 
