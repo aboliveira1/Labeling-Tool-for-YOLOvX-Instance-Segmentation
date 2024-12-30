@@ -37,7 +37,7 @@ A Python-based labeling tool that uses [Segment Anything Model (SAM)](https://gi
 3. **Activate the environment:**    On the command prompt, type:   `conda activate project_environment_name`       
    (again, use the name of the environment you have chosen)  
 4. **Install Ultralytics:** On the command prompt, type `pip install ultralytics`
-5. **Optional GPU-Based Ultralytics Installation:**  If you have an NVIDIA GPU, you will be able to utilize it for much faster processing for labeling and training. The following command should install everything neeeded (as of Dec. 2024): (`conda install -c pytorch -c nvidia -c conda-forge pytorch torchvision pytorch-cuda=11.8 ultralytics`  )    
+5. **Optional GPU-Based Ultralytics Installation:**  If you have an NVIDIA GPU, you will be able to utilize it for much faster processing for labeling and training. The following command should install everything neeeded (as of Dec. 2024): `conda install -c pytorch -c nvidia -c conda-forge pytorch torchvision pytorch-cuda=11.8 ultralytics`     
 
 Additionally, you will need a SAM weights file named (by default) **`sam2.1_b.pt`** in the same directory as the script—or you can modify the code to point to your own model file. When running the code for the first time, the **`sam2.1_b.pt`** file will be downloaded into the directory automatically.
 
