@@ -70,7 +70,7 @@ def get_image_files(root_dir):
 def darken_color(bgr, factor=0.6):
     """
     Given a BGR color tuple (each in [0..255]),
-    return a slightly darker version by multiplying each channel.
+    return a darker version by multiplying each channel by 'factor'.
     """
     db = int(bgr[0] * factor)
     dg = int(bgr[1] * factor)
@@ -82,15 +82,32 @@ class Labeler:
         self.class_names = class_names
         self.class_ids = list(range(len(self.class_names)))
         
-        # Use colors from 'tab10' colormap for better distinction
-        cmap = matplotlib.cm.get_cmap('tab10')
+        # Define 10 clear BGR colors for the first 10 classes
+        clear_colors_bgr = [
+            [0, 0, 255],      # Red
+            [0, 255, 0],      # Green
+            [255, 0, 0],      # Blue
+            [0, 255, 255],    # Yellow
+            [255, 0, 255],    # Magenta
+            [255, 255, 0],    # Cyan
+            [0, 165, 255],    # Orange
+            [128, 0, 128],    # Purple
+            [42, 42, 165],    # Brown
+            [203, 192, 255],  # Pink
+        ]
+
+        # Assign colors:
+        # - For the first 10 classes, use the fixed clear colors above
+        # - For classes beyond the 10th, pick random BGR colors
         self.class_colors = {}
         for cls_id in self.class_ids:
-            col = cmap(cls_id % 10)  # col is (R, G, B, A)
-            r = int(col[0] * 255)
-            g = int(col[1] * 255)
-            b = int(col[2] * 255)
-            self.class_colors[cls_id] = [b, g, r]  # store in BGR
+            if cls_id < 10:
+                self.class_colors[cls_id] = clear_colors_bgr[cls_id]
+            else:
+                b = random.randint(0, 255)
+                g = random.randint(0, 255)
+                r = random.randint(0, 255)
+                self.class_colors[cls_id] = [b, g, r]
 
         self.image_files = image_files
         self.model = model
@@ -105,7 +122,7 @@ class Labeler:
         # "current_masks" = partial masks for the object currently being labeled
         self.current_masks = []
         
-        # "newly_labeled_masks" = masks just finalized (for highlighting)
+        # "newly_labeled_masks" = masks just finalized (for highlighting if desired)
         self.newly_labeled_masks = []
         
         self.hover_mask = None
@@ -246,38 +263,35 @@ class Labeler:
 
         overlay = self.img.copy()
 
-        # Draw finalized masks + in-progress masks
-        for mask_dict in self.masks + self.current_masks:
+        # Draw (finalized + in-progress) masks, each with a thicker/darker boundary
+        all_masks = self.masks + self.current_masks
+        for mask_dict in all_masks:
             mask = mask_dict['mask']
             class_id = mask_dict['class_id']
             if class_id not in self.class_colors:
                 print(f"Warning: No color for class_id={class_id}; skipping.")
                 continue
+
             color = np.array(self.class_colors[class_id], dtype=np.uint8)
             mask_img = np.zeros_like(self.img)
             mask_img[mask] = color
-            overlay = cv2.addWeighted(overlay, 1.0, mask_img, 0.3, 0)
+            # Adjust alpha for a more prominent fill
+            overlay = cv2.addWeighted(overlay, 1.0, mask_img, 0.6, 0)
 
-        # If hover mask, show it in current class color
-        if self.hover_mask is not None:
-            if self.current_class_id in self.class_colors:
-                color = np.array(self.class_colors[self.current_class_id], dtype=np.uint8)
-                mask_img = np.zeros_like(self.img)
-                mask_img[self.hover_mask] = color
-                overlay = cv2.addWeighted(overlay, 1.0, mask_img, 0.3, 0)
-
-        # Highlight newly labeled masks with darker contour
-        for mask_dict in self.newly_labeled_masks:
-            mask = mask_dict['mask'].astype(np.uint8)
-            class_id = mask_dict['class_id']
-            if class_id not in self.class_colors:
-                continue
-            base_color = self.class_colors[class_id]
-            contour_color = darken_color(base_color, factor=0.6)
-            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            # Now draw the contour with a thicker/darker edge
+            mask_byte = mask.astype(np.uint8)
+            contours, _ = cv2.findContours(mask_byte, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contour_color = darken_color(color, factor=0.3)
             for cnt in contours:
                 if len(cnt) >= 3:
-                    cv2.drawContours(overlay, [cnt], -1, contour_color, thickness=2)
+                    cv2.drawContours(overlay, [cnt], -1, contour_color, thickness=3)
+
+        # If hover mask, show it in current class color (slightly transparent)
+        if self.hover_mask is not None and self.current_class_id in self.class_colors:
+            color = np.array(self.class_colors[self.current_class_id], dtype=np.uint8)
+            mask_img = np.zeros_like(self.img)
+            mask_img[self.hover_mask] = color
+            overlay = cv2.addWeighted(overlay, 1.0, mask_img, 0.4, 0)
 
         self.image_display = self.ax.imshow(cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB))
         self.ax.set_title(
@@ -385,7 +399,7 @@ class Labeler:
         """
         Finalize the current object(s).
         Merge partial masks in self.current_masks into self.masks,
-        highlight them, then save annotation.
+        then save annotation.
         """
         self.masks.extend(self.current_masks)
         self.newly_labeled_masks = self.current_masks[:]
@@ -599,7 +613,6 @@ def run_frontend():
             n_total = len(data_pairs)
             n_train = int(n_total * train_ratio)
             n_valid = int(n_total * valid_ratio)
-            # test = the rest
             n_test = n_total - (n_train + n_valid)
 
             train_split = data_pairs[:n_train]
@@ -720,7 +733,6 @@ def run_frontend():
         root,
         text="Split and Prepare Data",
         command=split_data_gui,
-        # bg=BUTTON_BG_COLOR,
         bg="#152036",
         fg=BUTTON_FG_COLOR,
         font=FONT,
@@ -729,6 +741,10 @@ def run_frontend():
     ).pack(pady=10)
 
     root.mainloop()
+
+if __name__ == '__main__':
+    run_frontend()
+
 
 if __name__ == '__main__':
     run_frontend()
